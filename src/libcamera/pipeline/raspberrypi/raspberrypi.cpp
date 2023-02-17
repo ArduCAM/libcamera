@@ -1616,6 +1616,13 @@ int RPiCameraData::loadIPA(ipa::RPi::IPAInitResult *result)
 
 	IPASettings settings(configurationFile, sensor_->entity()->name());
 
+	if (!sensor_->focusLens()) {
+		ControlInfoMap sensorControls = sensor_->controls();
+		auto iter = sensorControls.find(V4L2_CID_FOCUS_ABSOLUTE);
+		if (iter != sensorControls.end())
+			return ipa_->init(settings, true, result);
+	}
+
 	return ipa_->init(settings, !!sensor_->focusLens(), result);
 }
 
@@ -1629,6 +1636,11 @@ int RPiCameraData::configureIPA(const CameraConfiguration *config, ipa::RPi::IPA
 	ipaConfig.ispControls = isp_[Isp::Input].dev()->controls();
 	if (sensor_->focusLens())
 		ipaConfig.lensControls = sensor_->focusLens()->controls();
+	else {
+		auto iter = ipaConfig.sensorControls.find(V4L2_CID_FOCUS_ABSOLUTE);
+		if (iter != ipaConfig.sensorControls.end())
+			ipaConfig.lensControls = sensor_->controls();
+	}
 
 	/* Always send the user transform to the IPA. */
 	ipaConfig.transform = static_cast<unsigned int>(config->transform);
@@ -1852,6 +1864,15 @@ void RPiCameraData::setLensControls(const ControlList &controls)
 	if (lens && controls.contains(V4L2_CID_FOCUS_ABSOLUTE)) {
 		ControlValue const &focusValue = controls.get(V4L2_CID_FOCUS_ABSOLUTE);
 		lens->setFocusPosition(focusValue.get<int32_t>());
+	} else {
+		ControlInfoMap sensorControls = sensor_->controls();
+		auto iter = sensorControls.find(V4L2_CID_FOCUS_ABSOLUTE);
+		if (iter != sensorControls.end()) {
+			ControlValue const &focusValue = controls.get(V4L2_CID_FOCUS_ABSOLUTE);
+			ControlList lensCtrls(sensor_->controls());
+			lensCtrls.set(V4L2_CID_FOCUS_ABSOLUTE, static_cast<int32_t>(focusValue.get<int32_t>()));
+			sensor_->setControls(&lensCtrls);
+		}
 	}
 }
 
