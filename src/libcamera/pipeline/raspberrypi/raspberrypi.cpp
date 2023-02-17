@@ -1465,6 +1465,7 @@ int PipelineHandlerRPi::prepareBuffers(Camera *camera)
 {
 	RPiCameraData *data = cameraData(camera);
 	unsigned int numRawBuffers = 0;
+	unsigned int minBuffers = 0;
 	int ret;
 
 	for (Stream *s : camera->streams()) {
@@ -1474,6 +1475,10 @@ int PipelineHandlerRPi::prepareBuffers(Camera *camera)
 		}
 	}
 
+	for (const Stream *s : camera->streams())
+		if (static_cast<const RPi::Stream *>(s)->isExternal())
+			minBuffers = std::max(minBuffers, s->configuration().bufferCount);
+
 	/* Decide how many internal buffers to allocate. */
 	for (auto const stream : data->streams_) {
 		unsigned int numBuffers;
@@ -1481,7 +1486,7 @@ int PipelineHandlerRPi::prepareBuffers(Camera *camera)
 		 * For Unicam, allocate a minimum of 4 buffers as we want
 		 * to avoid any frame drops.
 		 */
-		constexpr unsigned int minBuffers = 4;
+		// constexpr unsigned int minBuffers = 4;
 		if (stream == &data->unicam_[Unicam::Image]) {
 			/*
 			 * If an application has configured a RAW stream, allocate
@@ -1489,14 +1494,14 @@ int PipelineHandlerRPi::prepareBuffers(Camera *camera)
 			 * we have at least 2 sets of internal buffers to use to
 			 * minimise frame drops.
 			 */
-			numBuffers = std::max<int>(2, minBuffers - numRawBuffers);
+			numBuffers = std::max<int>(1, minBuffers - numRawBuffers);
 		} else if (stream == &data->isp_[Isp::Input]) {
 			/*
 			 * ISP input buffers are imported from Unicam, so follow
 			 * similar logic as above to count all the RAW buffers
 			 * available.
 			 */
-			numBuffers = numRawBuffers + std::max<int>(2, minBuffers - numRawBuffers);
+			numBuffers = numRawBuffers + std::max<int>(1, minBuffers - numRawBuffers);
 
 		} else if (stream == &data->unicam_[Unicam::Embedded]) {
 			/*
@@ -1513,6 +1518,8 @@ int PipelineHandlerRPi::prepareBuffers(Camera *camera)
 			 */
 			numBuffers = 1;
 		}
+
+		LOG(RPI, Debug) << stream->name() << ": number buffers: " << numBuffers;
 
 		ret = stream->prepareBuffers(numBuffers);
 		if (ret < 0)
