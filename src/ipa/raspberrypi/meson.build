@@ -17,6 +17,7 @@ rpi_ipa_sources = files([
     'raspberrypi.cpp',
     'md_parser_smia.cpp',
     'cam_helper.cpp',
+    'cam_helper_arducam_64mp.cpp',
     'cam_helper_ov5647.cpp',
     'cam_helper_imx219.cpp',
     'cam_helper_imx290.cpp',
