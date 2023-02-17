@@ -248,12 +248,22 @@ int IPARPi::init(const IPASettings &settings, bool lensPresent, IPAInitResult *r
 	result->sensorConfig.hblankDelay = hblankDelay;
 	result->sensorConfig.sensorMetadata = sensorMetadata;
 
+	char const *configFromEnv = secure_getenv("LIBCAMERA_RPI_TUNING_FILE");
+
 	/* Load the tuning file for this sensor. */
-	int ret = controller_.read(settings.configurationFile.c_str());
+	int ret;
+	std::string error_info;
+	std::string tuningData = helper_->getTuningData();
+	if (tuningData.empty() || (configFromEnv && *configFromEnv != '\0')) {
+		ret = controller_.read(settings.configurationFile.c_str());
+		error_info = "Failed to load tuning data file " + settings.configurationFile;
+	}
+	else {
+		ret = controller_.read(tuningData);
+		error_info = "Failed to load tuning data string";
+	}
 	if (ret) {
-		LOG(IPARPI, Error)
-			<< "Failed to load tuning data file "
-			<< settings.configurationFile;
+		LOG(IPARPI, Error) << error_info;
 		return ret;
 	}
 

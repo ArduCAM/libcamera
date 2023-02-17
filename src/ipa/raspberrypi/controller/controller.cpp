@@ -27,6 +27,42 @@ Controller::Controller()
 
 Controller::~Controller() {}
 
+int Controller::read(std::string json)
+{
+	std::unique_ptr<YamlObject> root = YamlParser::parse(json);
+	double version = (*root)["version"].get<double>(1.0);
+
+	if (version < 2.0) {
+		LOG(RPiController, Warning)
+			<< "This format of the tuning file will be deprecated soon!"
+			<< " Please use the convert_tuning.py utility to update to version 2.0.";
+
+		for (auto const &[key, value] : root->asDict()) {
+			int ret = createAlgorithm(key, value);
+			if (ret)
+				return ret;
+		}
+	} else if (version < 3.0) {
+		if (!root->contains("algorithms")) {
+			LOG(RPiController, Error)
+				<< " does not have an \"algorithms\" list!";
+			return -EINVAL;
+		}
+
+		for (auto const &rootAlgo : (*root)["algorithms"].asList())
+			for (auto const &[key, value] : rootAlgo.asDict()) {
+				int ret = createAlgorithm(key, value);
+				if (ret)
+					return ret;
+			}
+	} else {
+		LOG(RPiController, Error)
+			<< "Unrecognised version " << version;
+		return -EINVAL;
+	}
+	return 0;
+}
+
 int Controller::read(char const *filename)
 {
 	File file(filename);

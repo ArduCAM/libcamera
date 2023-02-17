@@ -42,6 +42,7 @@ public:
 	Controller();
 	~Controller();
 	int read(char const *filename);
+	int read(std::string json);
 	void initialise();
 	void switchMode(CameraMode const &cameraMode, Metadata *metadata);
 	void prepare(Metadata *imageMetadata);

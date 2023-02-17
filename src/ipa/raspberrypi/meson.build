@@ -4,6 +4,7 @@ ipa_name = 'ipa_rpi'
 
 rpi_ipa_deps = [
     libcamera_private,
+    dependency('arducam_pivariety'),
     libatomic,
 ]
 
@@ -17,6 +18,7 @@ rpi_ipa_sources = files([
     'raspberrypi.cpp',
     'md_parser_smia.cpp',
     'cam_helper.cpp',
+    'cam_helper_arducam.cpp',
     'cam_helper_arducam_64mp.cpp',
     'cam_helper_ov5647.cpp',
     'cam_helper_imx219.cpp',
