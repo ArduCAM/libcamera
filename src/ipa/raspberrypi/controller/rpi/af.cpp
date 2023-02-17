@@ -15,6 +15,8 @@
 
 #include <libcamera/control_ids.h>
 
+#include "../agc_status.h"
+
 using namespace RPiController;
 using namespace libcamera;
 
@@ -485,11 +487,28 @@ void Af::doScan(double contrast, double phase, double conf)
 			 */
 			ftarget_ = findPeak(scanMaxIndex_);
 			scanState_ = ScanState::Settle;
-		} else
+		} else 
 			ftarget_ -= cfg_.speeds[speed_].stepFine;
 	}
 
 	stepCount_ = (ftarget_ == fsmooth_) ? 0 : cfg_.speeds[speed_].stepFrames;
+}
+
+
+static void generate_stats(std::vector<double> &zones,
+			   bcm2835_isp_stats_region *stats, double min_pixels,
+			   double min_G)
+{
+	for (int i = 0; i < DEFAULT_AWB_REGIONS_X * DEFAULT_AWB_REGIONS_Y; i++) {
+		double zone;
+		double counted = stats[i].counted;
+		if (counted >= min_pixels) {
+			zone = stats[i].g_sum / counted;
+			if (zone >= min_G) {
+				zones.push_back(zone);
+			}
+		}
+	}
 }
 
 void Af::doAF(double contrast, double phase, double conf)
@@ -500,8 +519,38 @@ void Af::doAF(double contrast, double phase, double conf)
 		skipCount_--;
 		return;
 	}
-
-	if (scanState_ == ScanState::Pdaf) {
+	PdafData data;
+	int isPdaf = imageMetadata_->get("pdaf.data", data);
+	if (mode_ == AfModeContinuous && isPdaf < 0 && scanState_ == ScanState::Idle) {
+		AgcStatus agc_status;
+		if (imageMetadata_->get("agc.status", agc_status) == 0) {
+			LOG(RPiAf, Debug) << "AGC Locked: " << agc_status.locked;
+		} else {
+			agc_status.locked = 0;
+		}
+		std::vector<double> zones;
+		zones.clear();
+		generate_stats(zones, stats_->awb_stats, 16, 32);
+		double sum = 0;
+		double mean;
+		for (double zone: zones) {
+			sum += zone;
+		}
+		mean = sum / zones.size();
+		if (agc_status.locked) {
+			double mean_diff = std::abs(mean - last_mean) ;
+			if (mean_diff > 100) {
+				trigger_when_stable = true;
+				LOG(RPiAf, Debug) << "Diff > 100.";
+			}
+			if (trigger_when_stable && mean_diff < 50)
+				startProgrammedScan();
+			else if (last_agc_status == 0 && agc_status.locked)
+				startProgrammedScan();
+		}
+		last_agc_status = agc_status.locked;
+		last_mean = mean;
+	} else if (scanState_ == ScanState::Pdaf) {
 		/*
 		 * Use PDAF closed-loop control whenever available, in both CAF
 		 * mode and (for a limited number of iterations) when triggered.
@@ -535,7 +584,7 @@ void Af::doAF(double contrast, double phase, double conf)
 			else
 				reportState_ = AfState::Failed;
 			if (mode_ == AfModeContinuous && !pauseFlag_ &&
-			    cfg_.speeds[speed_].dropoutFrames > 0)
+			    cfg_.speeds[speed_].dropoutFrames > 0 && isPdaf == 0)
 				scanState_ = ScanState::Pdaf;
 			else
 				scanState_ = ScanState::Idle;
@@ -599,6 +648,10 @@ void Af::startProgrammedScan()
 	scanData_.clear();
 	stepCount_ = cfg_.speeds[speed_].stepFrames;
 	reportState_ = AfState::Scanning;
+	stable_frame_count = 0;
+	last_mean = 0;
+	trigger_when_stable = false;
+	last_agc_status = false;
 }
 
 void Af::goIdle()
@@ -631,6 +684,7 @@ void Af::prepare(Metadata *imageMetadata)
 		double oldFs = fsmooth_;
 		ScanState oldSs = scanState_;
 		uint32_t oldSt = stepCount_;
+		imageMetadata_ = imageMetadata;
 		if (imageMetadata->get("pdaf.data", data) == 0)
 			getPhase(data, phase, conf);
 		doAF(prevContrast_, phase, conf);
@@ -667,6 +721,7 @@ void Af::process(StatisticsPtr &stats, [[maybe_unused]] Metadata *imageMetadata)
 {
 	(void)imageMetadata;
 	prevContrast_ = getContrast(stats->focus_stats);
+	stats_ = stats;
 }
 
 /* Controls */
