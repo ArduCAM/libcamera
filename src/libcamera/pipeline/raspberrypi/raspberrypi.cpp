@@ -1170,6 +1170,15 @@ int PipelineHandlerRPi::start(Camera *camera, const ControlList *controls)
 	 * Set the dequeue timeout to the larger of 2x the maximum possible
 	 * frame duration or 1 second.
 	 */
+
+	char const * timeoutEnv = secure_getenv("LIBCAMERA_SET_TIMEOUT");
+	if (timeoutEnv && *timeoutEnv != '\0') {
+		LOG(RPI, Debug) << "Set dequeue timeout: " << timeoutEnv;
+		if (sscanf(timeoutEnv, "%d", &startConfig.maxSensorFrameLengthMs) != 1) {
+			LOG(RPI, Error) << "Please set int type data";
+        }
+	}
+
 	utils::Duration timeout =
 		std::max<utils::Duration>(1s, 2 * startConfig.maxSensorFrameLengthMs * 1ms);
 	data->unicam_[Unicam::Image].dev()->setDequeueTimeout(timeout);
