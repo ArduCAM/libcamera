@@ -10,6 +10,7 @@
 #include <limits>
 #include <map>
 #include <string.h>
+#include <regex>
 
 #include "libcamera/internal/v4l2_videodevice.h"
 
@@ -37,16 +38,41 @@ std::map<std::string, CamHelperCreateFunc> &camHelpers()
 
 CamHelper *CamHelper::create(std::string const &camName)
 {
+	std::regex i2cRegex{ " ([0-9]+)-([0-9a-f]{4})" };
+	std::smatch match;
+	int16_t i2c_bus;
+	int16_t i2c_addr;
+
+	std::string model;
+	if (std::regex_search(camName, match, i2cRegex)) {
+		model = camName.substr(0, camName.find(' '));
+		i2c_bus = std::stoul(match[1], nullptr, 10);
+		i2c_addr = std::stoul(match[2], nullptr, 16);
+	}
+	else {
+		model = camName;
+		i2c_bus = -1;
+		i2c_addr = -1;
+	}
+
+	CamHelper *helper = nullptr;
+
 	/*
 	 * CamHelpers get registered by static RegisterCamHelper
 	 * initialisers.
 	 */
 	for (auto &p : camHelpers()) {
-		if (camName.find(p.first) != std::string::npos)
-			return p.second();
+		if (model.find(p.first) != std::string::npos) {
+			helper = p.second();
+			break;
+		}
 	}
 
-	return nullptr;
+	if (helper != nullptr) {
+		helper->setI2C(i2c_bus, i2c_addr);
+	}
+
+	return helper;
 }
 
 CamHelper::CamHelper(std::unique_ptr<MdParser> parser, unsigned int frameIntegrationDiff)
@@ -256,6 +282,16 @@ void CamHelper::parseEmbeddedData(Span<const uint8_t> buffer,
 void CamHelper::populateMetadata([[maybe_unused]] const MdParser::RegisterMap &registers,
 				 [[maybe_unused]] Metadata &metadata) const
 {
+}
+
+std::string CamHelper::getTuningData() const
+{
+	return std::string();
+}
+
+void CamHelper::setI2C(int16_t i2c_bus, int16_t i2c_addr) {
+	this->i2c_bus_ = i2c_bus;
+	this->i2c_address_ = i2c_addr;
 }
 
 RegisterCamHelper::RegisterCamHelper(char const *camName,
