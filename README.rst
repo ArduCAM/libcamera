@@ -52,6 +52,20 @@ Meson Build system: [required]
 for the libcamera core: [required]
         libyaml-dev python3-yaml python3-ply python3-jinja2
 
+for the Arducam Pivariety module: [required]
+        arducam-pivariety-sdk-dev
+        
+        You can refer to the following command to install arducam-pivariety-sdk-dev.
+
+        .. code::
+
+                curl -s --compressed "https://arducam.github.io/arducam_ppa/KEY.gpg" | sudo apt-key add -
+                sudo curl -s --compressed -o /etc/apt/sources.list.d/arducam_list_files.list "https://arducam.github.io/arducam_ppa/arducam_list_files.list"
+                sudo apt update
+                sudo apt install arducam-pivariety-sdk-dev
+
+        If arducam-pivariety-sdk-dev is not installed, compilation will fail.
+
 for IPA module signing: [recommended]
         Either libgnutls28-dev or libssl-dev, openssl
 
