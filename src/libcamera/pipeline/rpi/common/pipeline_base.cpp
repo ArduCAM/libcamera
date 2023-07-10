@@ -1164,7 +1164,16 @@ int CameraData::loadIPA(ipa::RPi::InitResult *result)
 		return ret;
 	}
 
-	params.lensPresent = !!sensor_->focusLens();
+	if (!sensor_->focusLens()) {
+		ControlInfoMap sensorControls = sensor_->controls();
+		auto iter = sensorControls.find(V4L2_CID_FOCUS_ABSOLUTE);
+		if (iter != sensorControls.end()) {
+			params.lensPresent = true;
+		}
+	} else {
+		params.lensPresent = !!sensor_->focusLens();
+	}
+
 	ret = platformInitIpa(params);
 	if (ret)
 		return ret;
@@ -1180,6 +1189,11 @@ int CameraData::configureIPA(const CameraConfiguration *config, ipa::RPi::Config
 	params.sensorControls = sensor_->controls();
 	if (sensor_->focusLens())
 		params.lensControls = sensor_->focusLens()->controls();
+	else {
+		auto iter = params.sensorControls.find(V4L2_CID_FOCUS_ABSOLUTE);
+		if (iter != params.sensorControls.end())
+			params.lensControls = sensor_->controls();
+	}
 
 	ret = platformConfigureIpa(params);
 	if (ret)
@@ -1254,6 +1268,15 @@ void CameraData::setLensControls(const ControlList &controls)
 	if (lens && controls.contains(V4L2_CID_FOCUS_ABSOLUTE)) {
 		ControlValue const &focusValue = controls.get(V4L2_CID_FOCUS_ABSOLUTE);
 		lens->setFocusPosition(focusValue.get<int32_t>());
+	} else {
+		ControlInfoMap sensorControls = sensor_->controls();
+		auto iter = sensorControls.find(V4L2_CID_FOCUS_ABSOLUTE);
+		if (iter != sensorControls.end()) {
+			ControlValue const &focusValue = controls.get(V4L2_CID_FOCUS_ABSOLUTE);
+			ControlList lensCtrls(sensor_->controls());
+			lensCtrls.set(V4L2_CID_FOCUS_ABSOLUTE, static_cast<int32_t>(focusValue.get<int32_t>()));
+			sensor_->setControls(&lensCtrls);
+		}
 	}
 }
 
