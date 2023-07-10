@@ -362,10 +362,6 @@
         {
             "rpi.ccm":
             {
-                "saturation":
-                [
-                    400, 0.8, 1250, 0.8
-                ],
                 "ccms": [
                     {
                         "ct": 2890,
@@ -458,8 +454,8 @@
                         "pdaf_gain": -0.02,
                         "pdaf_squelch": 0.125,
                         "max_slew": 2.0,
-                        "pdaf_frames": 0,
-                        "dropout_frames": 0,
+                        "pdaf_frames": 20,
+                        "dropout_frames": 6,
                         "step_frames": 4
                     }
                 },
@@ -467,7 +463,7 @@
                 "conf_thresh": 16,
                 "conf_clip": 512,
                 "skip_frames": 5,
-                "map": [ 0.0, 0, 15.0, 4095 ]
+                "map": [ 0.0, 0.0, 15.0, 4095 ]
             }
         }
     ]
