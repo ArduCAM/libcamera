@@ -210,9 +210,9 @@
                 },
                 "y_target":
                 [
-                    0, 0.16,
-                    1000, 0.165,
-                    10000, 0.17
+                    0, 0.20, 
+                    1000, 0.205, 
+                    10000, 0.21
                 ]
             }
         },
@@ -362,6 +362,10 @@
         {
             "rpi.ccm":
             {
+                "saturation":
+                [
+                    400, 0.8, 1250, 0.8
+                ],
                 "ccms": [
                     {
                         "ct": 2890,
@@ -422,6 +426,49 @@
         },
         {
             "rpi.sharpen": { }
+        },
+        {
+            "rpi.focus": { }
+        },
+        {
+            "rpi.af":
+            {
+                "ranges":
+                {
+                    "normal":
+                    {
+                        "min": 0.0,
+                        "max": 12.0,
+                        "default": 1.0
+                    },
+                    "macro":
+                    {
+                        "min": 3.0,
+                        "max": 15.0,
+                        "default": 4.0
+                    }
+                },
+                "speeds":
+                {
+                    "normal":
+                    {
+                        "step_coarse": 1.0,
+                        "step_fine": 0.25,
+                        "contrast_ratio": 0.75,
+                        "pdaf_gain": -0.02,
+                        "pdaf_squelch": 0.125,
+                        "max_slew": 2.0,
+                        "pdaf_frames": 0,
+                        "dropout_frames": 0,
+                        "step_frames": 4
+                    }
+                },
+                "conf_epsilon": 8,
+                "conf_thresh": 16,
+                "conf_clip": 512,
+                "skip_frames": 5,
+                "map": [ 0.0, 0, 15.0, 4095 ]
+            }
         }
     ]
 }
