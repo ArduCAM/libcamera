@@ -2,6 +2,7 @@
 
 rpi_ipa_cam_helper_sources = files([
     'cam_helper.cpp',
+    'cam_helper_arducam.cpp',
     'cam_helper_arducam_64mp.cpp',
     'cam_helper_ov5647.cpp',
     'cam_helper_imx219.cpp',
@@ -26,6 +27,7 @@ subdir('imx500_tensor_parser')
 
 rpi_ipa_cam_helper_deps = [
     libcamera_private,
+    dependency('arducam_pivariety'),
 ]
 
 rpi_ipa_cam_helper_lib = static_library('rpi_ipa_cam_helper', rpi_ipa_cam_helper_sources,
