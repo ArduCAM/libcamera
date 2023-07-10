@@ -1165,7 +1165,7 @@ int CameraData::loadIPA(ipa::RPi::InitResult *result)
 		model += "_mono";
 	std::string configurationFile = ipa_->configurationFile(model + ".json");
 
-	IPASettings settings(configurationFile, sensor_->model());
+	IPASettings settings(configurationFile, sensor_->entity()->name());
 	ipa::RPi::InitParams params;
 
 	ret = sensor_->sensorInfo(&params.sensorInfo);
