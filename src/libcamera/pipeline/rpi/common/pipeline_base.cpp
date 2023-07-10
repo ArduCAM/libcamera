@@ -819,13 +819,27 @@ int PipelineHandlerBase::registerCamera(std::unique_ptr<RPi::CameraData> &camera
 	 * Setup our delayed control writer with the sensor default
 	 * gain and exposure delays. Mark VBLANK for priority write.
 	 */
-	const CameraSensorProperties::SensorDelays &delays = data->sensor_->sensorDelays();
-	std::unordered_map<uint32_t, RPi::DelayedControls::ControlParams> params = {
-		{ V4L2_CID_ANALOGUE_GAIN, { delays.gainDelay, false } },
-		{ V4L2_CID_EXPOSURE, { delays.exposureDelay, false } },
-		{ V4L2_CID_HBLANK, { delays.hblankDelay, false } },
-		{ V4L2_CID_VBLANK, { delays.vblankDelay, true } }
-	};
+	std::unordered_map<uint32_t, RPi::DelayedControls::ControlParams> params;
+	if (data->sensor_->model() == "arducam-pivariety") {
+		// Since the "arducam-pivariety" camera needs to obtain 
+		// sensorDelays information from the camera, 
+		// we restore the previous method to obtain delays.
+		params = {
+			{ V4L2_CID_ANALOGUE_GAIN, { result.sensorConfig.gainDelay, false } },
+			{ V4L2_CID_EXPOSURE, { result.sensorConfig.exposureDelay, false } },
+			{ V4L2_CID_HBLANK, { result.sensorConfig.hblankDelay, false } },
+			{ V4L2_CID_VBLANK, { result.sensorConfig.vblankDelay, true } }
+		};
+	} else {
+		const CameraSensorProperties::SensorDelays &delays = data->sensor_->sensorDelays();
+		params = {
+			{ V4L2_CID_ANALOGUE_GAIN, { delays.gainDelay, false } },
+			{ V4L2_CID_EXPOSURE, { delays.exposureDelay, false } },
+			{ V4L2_CID_HBLANK, { delays.hblankDelay, false } },
+			{ V4L2_CID_VBLANK, { delays.vblankDelay, true } }
+		};
+	}
+	
 	data->delayedCtrls_ = std::make_unique<RPi::DelayedControls>(data->sensor_->device(), params);
 	data->sensorMetadata_ = result.sensorConfig.sensorMetadata;
 
