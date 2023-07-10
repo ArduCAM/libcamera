@@ -159,7 +159,7 @@ std::pair<uint32_t, uint32_t> CamHelperImx477::getBlanking(Duration &exposure,
 
 bool CamHelperImx477::sensorEmbeddedDataPresent() const
 {
-	return true;
+	return false;
 }
 
 void CamHelperImx477::populateMetadata(const MdParser::RegisterMap &registers,
