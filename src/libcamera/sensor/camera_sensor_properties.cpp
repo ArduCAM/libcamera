@@ -81,6 +81,16 @@ LOG_DEFINE_CATEGORY(CameraSensorProperties)
 const CameraSensorProperties *CameraSensorProperties::get(const std::string &sensor)
 {
 	static const std::map<std::string, const CameraSensorProperties> sensorProps = {
+		{ "arducam_64mp", {
+			.unitCellSize = { 800, 800 },
+			.testPatternModes = {},
+			.sensorDelays = {
+				.exposureDelay = 2,
+				.gainDelay = 2,
+				.vblankDelay = 3,
+				.hblankDelay = 3
+			},
+		} },
 		{ "ar0144", {
 			.unitCellSize = { 3000, 3000 },
 			.testPatternModes = {
