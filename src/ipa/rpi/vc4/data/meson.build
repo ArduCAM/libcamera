@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 conf_files = files([
+    'arducam_64mp.json',
     'imx219.json',
     'imx219_noir.json',
     'imx290.json',
