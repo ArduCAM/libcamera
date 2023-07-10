@@ -240,6 +240,7 @@ class YamlParser final
 {
 public:
 	static std::unique_ptr<YamlObject> parse(File &file);
+	static std::unique_ptr<YamlObject> parse(std::string json);
 };
 
 } /* namespace libcamera */
