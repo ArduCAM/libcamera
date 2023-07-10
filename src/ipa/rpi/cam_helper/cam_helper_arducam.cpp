@@ -133,4 +133,5 @@ static CamHelper *create()
 	return new CamHelperArducam();
 }
 
-static RegisterCamHelper reg("arducam", &create);
+static RegisterCamHelper reg("arducam-pivariety", &create);
+static RegisterCamHelper regAlias("arducam_pivariety", &create);
