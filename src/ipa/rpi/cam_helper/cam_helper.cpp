@@ -246,6 +246,12 @@ void CamHelper::parseEmbeddedData(Span<const uint8_t> buffer,
 
 	if (buffer.empty())
 		return;
+	
+	char const * embeddedEnv = secure_getenv("LIBCAMERA_NOTPARSE_EMBEDDED_DATA");
+	if (embeddedEnv && *embeddedEnv != '\0') {
+		LOG(IPARPI, Debug) << "Embedded data buffer parsing closed";
+		return;
+	}
 
 	if (parser_->parse(buffer, registers) != MdParser::Status::OK) {
 		LOG(IPARPI, Error) << "Embedded data buffer parsing failed";
