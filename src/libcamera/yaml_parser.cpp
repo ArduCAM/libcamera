@@ -16,6 +16,7 @@
 #include <libcamera/base/log.h>
 
 #include <yaml.h>
+#include <string>
 
 /**
  * \file libcamera/internal/yaml_parser.h
@@ -484,6 +485,7 @@ public:
 	~YamlParserContext();
 
 	int init(File &file);
+	int init(std::string json);
 	int parseContent(YamlObject &yamlObject);
 
 private:
@@ -508,6 +510,7 @@ private:
 
 	bool parserValid_;
 	yaml_parser_t parser_;
+	std::string tuning_data;
 };
 
 /**
@@ -555,6 +558,20 @@ int YamlParserContext::init(File &file)
 	}
 	parserValid_ = true;
 	yaml_parser_set_input(&parser_, &YamlParserContext::yamlRead, &file);
+
+	return 0;
+}
+
+int YamlParserContext::init(std::string json)
+{
+	if (!yaml_parser_initialize(&parser_)) {
+		LOG(YamlParser, Error) << "Failed to initialize YAML parser";
+		return -EINVAL;
+	}
+	parserValid_ = true;
+	size_t length = json.length();
+	tuning_data = json;
+	yaml_parser_set_input_string(&parser_, (const uint8_t*)tuning_data.c_str(), length);
 
 	return 0;
 }
@@ -849,5 +866,23 @@ std::unique_ptr<YamlObject> YamlParser::parse(File &file)
 
 	return root;
 }
+
+std::unique_ptr<YamlObject> YamlParser::parse(std::string json)
+{
+	YamlParserContext context;
+
+	if (context.init(json))
+		return nullptr;
+
+	std::unique_ptr<YamlObject> root(new YamlObject());
+
+	if (context.parseContent(*root)) {
+		LOG(YamlParser, Error) << "Failed to parse YAML content";
+		return nullptr;
+	}
+
+	return root;
+}
+
 
 } /* namespace libcamera */
