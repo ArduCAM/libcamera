@@ -170,7 +170,7 @@ void CamHelperImx519::getDelays(int &exposureDelay, int &gainDelay,
 
 bool CamHelperImx519::sensorEmbeddedDataPresent() const
 {
-	return true;
+	return false;
 }
 
 void CamHelperImx519::populateMetadata(const MdParser::RegisterMap &registers,
