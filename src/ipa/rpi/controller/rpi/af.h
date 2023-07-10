@@ -160,6 +160,16 @@ private:
 	double scanMaxContrast_, scanMinContrast_;
 	std::vector<ScanRecord> scanData_;
 	AfState reportState_;
+
+	bool isPdafEnabled_;
+	StatisticsPtr stats_;
+	Metadata* imageMetadata_;
+	double last_mean;
+	bool trigger_when_stable;
+	bool last_agc_status;
+	uint16_t stable_frame_count;
+	uint16_t startup_frames;
+	uint64_t frame_count_;
 };
 
 } // namespace RPiController
