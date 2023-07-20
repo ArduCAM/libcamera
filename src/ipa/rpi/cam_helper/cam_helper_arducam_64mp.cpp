@@ -14,9 +14,12 @@
 #include <stdlib.h>
 
 #include <libcamera/base/log.h>
+#include <controller/pdaf_data.h>
 
 #include "cam_helper.h"
 #include "md_parser.h"
+
+#define ALIGN_UP(x,a)    (((x)+(a)-1)&~(a-1))
 
 using namespace RPiController;
 using namespace libcamera;
@@ -67,8 +70,13 @@ private:
 	/* Largest long exposure scale factor given as a left shift on the frame length. */
 	static constexpr int longExposureShiftMax = 7;
 
+	static constexpr int pdafStatsRows = 12;
+	static constexpr int pdafStatsCols = 16;
+
 	void populateMetadata(const MdParser::RegisterMap &registers,
 			      Metadata &metadata) const override;
+	static bool parsePdafData(const uint8_t *ptr, size_t len, unsigned bpp,
+				  PdafRegions &pdaf);
 };
 
 CamHelperArducam64MP::CamHelperArducam64MP()
@@ -91,12 +99,25 @@ void CamHelperArducam64MP::prepare(libcamera::Span<const uint8_t> buffer, Metada
 	MdParser::RegisterMap registers;
 	DeviceStatus deviceStatus;
 
+	LOG(IPARPI, Debug) << "Embedded buffer size: " << buffer.size();
+
+	size_t bytesPerLine = (mode_.width * mode_.bitdepth) >> 3;
+	bytesPerLine = ALIGN_UP(bytesPerLine, 16);
+
 	if (metadata.get("device.status", deviceStatus)) {
 		LOG(IPARPI, Error) << "DeviceStatus not found from DelayedControls";
 		return;
 	}
 
 	parseEmbeddedData(buffer, metadata);
+
+	if (buffer.size() > 2 * bytesPerLine) {
+		PdafRegions pdaf;
+		if (parsePdafData(&buffer[2 * bytesPerLine],
+				  buffer.size() - 2 * bytesPerLine,
+				  mode_.bitdepth, pdaf))
+			metadata.set("pdaf.regions", pdaf);
+	}
 
 	/*
 	 * The DeviceStatus struct is first populated with values obtained from
@@ -170,7 +191,7 @@ void CamHelperArducam64MP::getDelays(int &exposureDelay, int &gainDelay,
 
 bool CamHelperArducam64MP::sensorEmbeddedDataPresent() const
 {
-	return false;
+	return true;
 }
 
 void CamHelperArducam64MP::populateMetadata(const MdParser::RegisterMap &registers,
@@ -185,6 +206,34 @@ void CamHelperArducam64MP::populateMetadata(const MdParser::RegisterMap &registe
 	deviceStatus.frameLength = registers.at(frameLengthHiReg) * 256 + registers.at(frameLengthLoReg);
 
 	metadata.set("device.status", deviceStatus);
+}
+
+bool CamHelperArducam64MP::parsePdafData(const uint8_t *ptr, size_t len,
+				    unsigned bpp, PdafRegions &pdaf)
+{
+	size_t step = bpp >> 1; /* bytes per PDAF grid entry */
+
+	if (bpp < 10 || bpp > 12 || len < 194 * step || ptr[0] != 0 || ptr[1] >= 0x40) {
+		LOG(IPARPI, Error) << "PDAF data in unsupported format";
+		return false;
+	}
+
+	pdaf.init({ pdafStatsCols, pdafStatsRows });
+
+	ptr += 2 * step;
+	for (unsigned i = 0; i < pdafStatsRows; ++i) {
+		for (unsigned j = 0; j < pdafStatsCols; ++j) {
+			unsigned c = (ptr[0] << 3) | (ptr[1] >> 5);
+			int p = (((ptr[1] & 0x0F) - (ptr[1] & 0x10)) << 6) | (ptr[2] >> 2);
+			PdafData pdafData;
+			pdafData.conf = c;
+			pdafData.phase = c ? p : 0;
+			pdaf.set(libcamera::Point(j, i), { pdafData, 1, 0 });
+			ptr += step;
+		}
+	}
+
+	return true;
 }
 
 static CamHelper *create()
