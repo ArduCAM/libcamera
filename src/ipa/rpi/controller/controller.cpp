@@ -86,6 +86,7 @@ int Controller::read(std::string json)
 {
 	std::unique_ptr<YamlObject> root = YamlParser::parse(json);
 	double version = (*root)["version"].get<double>(1.0);
+	target_ = (*root)["target"].get<std::string>("bcm2835");
 
 	if (version < 2.0) {
 		LOG(RPiController, Warning)
