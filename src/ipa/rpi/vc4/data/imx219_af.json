@@ -483,9 +483,6 @@
             "rpi.sharpen": { }
         },
         {
-            "rpi.focus": { }
-        },
-        {
             "rpi.af":
             {
                 "ranges":
