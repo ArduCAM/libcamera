@@ -328,9 +328,6 @@
             }
         },
         {
-            "rpi.focus": { }
-        },
-        {
             "rpi.af":
             {
                 "ranges":
