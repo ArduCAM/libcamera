@@ -282,7 +282,7 @@ void CamHelper::populateMetadata([[maybe_unused]] const MdParser::RegisterMap &r
 {
 }
 
-std::string CamHelper::getTuningData() const
+std::string CamHelper::getTuningData()
 {
 	return std::string();
 }
@@ -299,6 +299,11 @@ int CamHelper::getDelays(int &exposureDelay, int &gainDelay,
 	vblankDelay = 0;
 	hblankDelay = 0;
 	return false;
+}
+
+void CamHelper::setPlatformTarget(std::string target) 
+{
+	this->target_ = target;
 }
 
 RegisterCamHelper::RegisterCamHelper(char const *camName,

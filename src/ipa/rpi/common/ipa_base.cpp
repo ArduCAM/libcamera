@@ -151,6 +151,7 @@ int32_t IpaBase::init(const IPASettings &settings, const InitParams &params, Ini
 				   << settings.sensorModel;
 		return -EINVAL;
 	}
+	helper_->setPlatformTarget(target_);
 
 	/* Pass out the sensor metadata to the pipeline handler */
 	int sensorMetadata = helper_->sensorEmbeddedDataPresent();

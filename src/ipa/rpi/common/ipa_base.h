@@ -76,6 +76,8 @@ protected:
 	/* Whether the stitch block (if available) needs to swap buffers. */
 	bool stitchSwapBuffers_;
 
+	std::string target_;
+
 private:
 	/* Number of metadata objects available in the context list. */
 	static constexpr unsigned int numMetadataContexts = 16;
