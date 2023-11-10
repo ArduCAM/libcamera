@@ -73,6 +73,7 @@ protected:
 
 	bool monoSensor_;
 	bool lensPresent_;
+	std::string target_;
 
 private:
 	/* Number of metadata objects available in the context list. */
