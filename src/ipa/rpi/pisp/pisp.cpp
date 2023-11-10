@@ -201,6 +201,7 @@ public:
 	IpaPiSP()
 		: IpaBase(), fe_(nullptr), be_(nullptr)
 	{
+		target_ = "pisp";
 	}
 
 	~IpaPiSP()

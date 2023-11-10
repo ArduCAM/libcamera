@@ -100,8 +100,9 @@ public:
 	virtual unsigned int hideFramesModeSwitch() const;
 	virtual unsigned int mistrustFramesStartup() const;
 	virtual unsigned int mistrustFramesModeSwitch() const;
-	virtual std::string getTuningData() const;
+	virtual std::string getTuningData();
 	virtual void setI2C(int16_t i2c_bus, int16_t i2c_addr);
+	virtual void setPlatformTarget(std::string target);
 
 protected:
 	void parseEmbeddedData(libcamera::Span<const uint8_t> buffer,
@@ -114,6 +115,7 @@ protected:
 	Controller::HardwareConfig hwConfig_;
 	int16_t i2c_bus_;
 	int16_t i2c_address_;
+	std::string target_;
 
 private:
 	/*

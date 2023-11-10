@@ -23,7 +23,7 @@ public:
 	unsigned int hideFramesModeSwitch() const override;
 	unsigned int mistrustFramesStartup() const override;
 	unsigned int mistrustFramesModeSwitch() const override;
-	std::string getTuningData() const override;
+	std::string getTuningData() override;
 	void setI2C(int16_t i2c_bus, int16_t i2c_addr) override;
 
 private:
@@ -123,8 +123,11 @@ unsigned int CamHelperArducam::mistrustFramesModeSwitch() const
 	return 2;
 }
 
-std::string CamHelperArducam::getTuningData() const
+std::string CamHelperArducam::getTuningData()
 {
+	if (target_ == "pisp") {
+		Arducam::ArducamUtils::convertPISP(tuning_data);
+	}
 	return tuning_data;
 }
 
