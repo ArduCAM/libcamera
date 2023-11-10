@@ -290,7 +290,7 @@ void CamHelper::populateMetadata([[maybe_unused]] const MdParser::RegisterMap &r
 {
 }
 
-std::string CamHelper::getTuningData() const
+std::string CamHelper::getTuningData()
 {
 	return std::string();
 }
@@ -298,6 +298,11 @@ std::string CamHelper::getTuningData() const
 void CamHelper::setI2C(int16_t i2c_bus, int16_t i2c_addr) {
 	this->i2c_bus_ = i2c_bus;
 	this->i2c_address_ = i2c_addr;
+}
+
+void CamHelper::setPlatformTarget(std::string target) 
+{
+	this->target_ = target;
 }
 
 RegisterCamHelper::RegisterCamHelper(char const *camName,
