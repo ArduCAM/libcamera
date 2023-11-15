@@ -1,7 +1,9 @@
 # SPDX-License-Identifier: CC0-1.0
 
 conf_files = files([
+    'arducam_64mp.json',
     'imx219.json',
+    'imx219_af.json',
     'imx219_noir.json',
     'imx283.json',
     'imx290.json',
@@ -11,6 +13,7 @@ conf_files = files([
     'imx415.json',
     'imx462.json',
     'imx477.json',
+    'imx477_af.json',
     'imx477_noir.json',
     'imx477_scientific.json',
     'imx500.json',
@@ -20,6 +23,7 @@ conf_files = files([
     'imx708_wide.json',
     'imx708_wide_noir.json',
     'ov5647.json',
+    'ov5647_af.json',
     'ov5647_noir.json',
     'ov64a40.json',
     'ov9281_mono.json',
