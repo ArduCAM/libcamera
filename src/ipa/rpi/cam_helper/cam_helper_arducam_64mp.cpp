@@ -102,7 +102,9 @@ void CamHelperArducam64MP::prepare(libcamera::Span<const uint8_t> buffer, Metada
 	LOG(IPARPI, Debug) << "Embedded buffer size: " << buffer.size();
 
 	size_t bytesPerLine = (mode_.width * mode_.bitdepth) >> 3;
-	bytesPerLine = ALIGN_UP(bytesPerLine, 16);
+
+	if (target_ == "vc4")
+		bytesPerLine = ALIGN_UP(bytesPerLine, 16);
 
 	if (metadata.get("device.status", deviceStatus)) {
 		LOG(IPARPI, Error) << "DeviceStatus not found from DelayedControls";
