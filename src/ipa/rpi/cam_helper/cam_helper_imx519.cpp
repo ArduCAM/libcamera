@@ -101,7 +101,9 @@ void CamHelperImx519::prepare(libcamera::Span<const uint8_t> buffer, Metadata &m
 	LOG(IPARPI, Debug) << "Embedded buffer size: " << buffer.size();
 
 	size_t bytesPerLine = (mode_.width * mode_.bitdepth) >> 3;
-	bytesPerLine = ALIGN_UP(bytesPerLine, 16);
+
+	if (target_ == "vc4")
+		bytesPerLine = ALIGN_UP(bytesPerLine, 16);
 
 	if (metadata.get("device.status", deviceStatus)) {
 		LOG(IPARPI, Error) << "DeviceStatus not found from DelayedControls";
@@ -112,7 +114,8 @@ void CamHelperImx519::prepare(libcamera::Span<const uint8_t> buffer, Metadata &m
 
 	if (buffer.size() > 2 * bytesPerLine) {
 		PdafRegions pdaf;
-		if (parsePdafData(&buffer[2 * bytesPerLine],
+		if (target_ == "vc4" && 
+				parsePdafData(&buffer[2 * bytesPerLine],
 				  buffer.size() - 2 * bytesPerLine,
 				  mode_.bitdepth, pdaf))
 			metadata.set("pdaf.regions", pdaf);
