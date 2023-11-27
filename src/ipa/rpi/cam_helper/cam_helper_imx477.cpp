@@ -54,6 +54,8 @@ public:
 	void getDelays(int &exposureDelay, int &gainDelay,
 		       int &vblankDelay, int &hblankDelay) const override;
 	bool sensorEmbeddedDataPresent() const override;
+	unsigned int hideFramesModeSwitch() const override;
+	unsigned int mistrustFramesModeSwitch() const override;
 
 private:
 	/*
@@ -171,6 +173,18 @@ void CamHelperImx477::getDelays(int &exposureDelay, int &gainDelay,
 bool CamHelperImx477::sensorEmbeddedDataPresent() const
 {
 	return false;
+}
+
+unsigned int CamHelperImx477::hideFramesModeSwitch() const
+{
+	/* After a mode switch, many sensors return valid frames immediately. */
+	return 1;
+}
+
+unsigned int CamHelperImx477::mistrustFramesModeSwitch() const
+{
+	/* Many sensors return valid metadata immediately. */
+	return 1;
 }
 
 void CamHelperImx477::populateMetadata(const MdParser::RegisterMap &registers,
