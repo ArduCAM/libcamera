@@ -792,6 +792,7 @@ public:
 	PipelineHandlerPiSP(CameraManager *manager)
 		: RPi::PipelineHandlerBase(manager)
 	{
+		target_ = "pisp";
 	}
 
 	~PipelineHandlerPiSP()

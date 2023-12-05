@@ -226,6 +226,8 @@ protected:
 
 	virtual int platformRegister(std::unique_ptr<CameraData> &cameraData,
 				     MediaDevice *unicam, MediaDevice *isp) = 0;
+	
+	std::string target_;
 
 private:
 	CameraData *cameraData(Camera *camera)
