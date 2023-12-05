@@ -151,6 +151,7 @@ public:
 	PipelineHandlerVc4(CameraManager *manager)
 		: RPi::PipelineHandlerBase(manager)
 	{
+		target_ = "vc4";
 	}
 
 	~PipelineHandlerVc4()
