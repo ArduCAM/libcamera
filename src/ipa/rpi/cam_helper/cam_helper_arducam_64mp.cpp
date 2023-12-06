@@ -58,6 +58,7 @@ public:
 	void getDelays(int &exposureDelay, int &gainDelay,
 			       int &vblankDelay, int &hblankDelay) const override;
 	bool sensorEmbeddedDataPresent() const override;
+	unsigned int mistrustFramesModeSwitch() const override;
 
 private:
 	/*
@@ -236,6 +237,12 @@ bool CamHelperArducam64MP::parsePdafData(const uint8_t *ptr, size_t len,
 	}
 
 	return true;
+}
+
+unsigned int CamHelperArducam64MP::mistrustFramesModeSwitch() const
+{
+	/* Many sensors return valid metadata immediately. */
+	return 1;
 }
 
 static CamHelper *create()
