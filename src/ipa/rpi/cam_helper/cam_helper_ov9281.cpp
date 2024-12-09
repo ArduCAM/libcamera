@@ -17,6 +17,7 @@ public:
 	CamHelperOv9281();
 	uint32_t gainCode(double gain) const override;
 	double gain(uint32_t gainCode) const override;
+	unsigned int hideFramesModeSwitch() const override;
 
 private:
 	/*
@@ -44,6 +45,11 @@ uint32_t CamHelperOv9281::gainCode(double gain) const
 double CamHelperOv9281::gain(uint32_t gainCode) const
 {
 	return static_cast<double>(gainCode) / 16.0;
+}
+
+unsigned int CamHelperOv9281::hideFramesModeSwitch() const
+{
+	return 1;
 }
 
 static CamHelper *create()
