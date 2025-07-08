@@ -660,6 +660,8 @@
                         "step_coarse": 1.0,
                         "step_fine": 0.25,
                         "contrast_ratio": 0.75,
+                        "retrigger_ratio": 0.8,
+                        "retrigger_delay": 8,
                         "pdaf_gain": -0.02,
                         "pdaf_squelch": 0.125,
                         "max_slew": 2.0,
@@ -672,6 +674,7 @@
                 "conf_thresh": 16,
                 "conf_clip": 512,
                 "skip_frames": 5,
+                "check_for_ir": false,
                 "map": [ 0.0, 0.0, 15.0, 4095 ]
             }
         }
