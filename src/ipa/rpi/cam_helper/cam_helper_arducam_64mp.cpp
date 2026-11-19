@@ -137,7 +137,7 @@ void CamHelperArducam64MP::prepare(libcamera::Span<const uint8_t> buffer, Metada
 		metadata.get("device.status", parsedDeviceStatus);
 		parsedDeviceStatus.exposureTime = deviceStatus.exposureTime;
 		parsedDeviceStatus.frameLength = deviceStatus.frameLength;
-		metadata.get("device.status", parsedDeviceStatus);
+		metadata.set("device.status", parsedDeviceStatus);
 
 		LOG(IPARPI, Debug) << "Metadata updated for long exposure: "
 				   << parsedDeviceStatus;
